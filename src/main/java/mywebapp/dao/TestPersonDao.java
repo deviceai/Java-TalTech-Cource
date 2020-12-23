@@ -1,5 +1,7 @@
 package mywebapp.dao;
 
+import mywebapp.model.Person;
+
 import java.sql.SQLException;
 
 public class TestPersonDao {
@@ -9,6 +11,15 @@ public class TestPersonDao {
 //        dao.createSchema();
 
         System.out.println(dao.findPersons());
-        System.out.println(dao.findPersonById(22L));
+        System.out.println(dao.findPersonById(2L));
+
+        //Insert new person
+        Person person = new Person();
+        person.setName("tim");
+        person.setAge(55);
+
+        System.out.println(dao.insertPerson(person));
+        System.out.println(dao.findPersons());
+
     }
 }

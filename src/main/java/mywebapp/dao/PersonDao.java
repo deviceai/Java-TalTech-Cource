@@ -12,10 +12,7 @@ public class PersonDao {
     public List<Person> findPersons() {
 
         try (
-                Connection conn = DriverManager.getConnection(
-                        "jdbc:postgresql://localhost:5433/taltech_course",
-                        "postgres",
-                        "postgres");
+                Connection conn = getConnection();
 
                 Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(
@@ -37,15 +34,19 @@ public class PersonDao {
         }
     }
 
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(
+                "jdbc:postgresql://localhost:5433/taltech_course",
+                "postgres",
+                "postgres");
+    }
+
     public Person findPersonById(Long id) throws SQLException {
 
         String sql = "SELECT id, name, age from person where id = ?";
 
         try (
-                Connection conn = DriverManager.getConnection(
-                        "jdbc:postgresql://localhost:5433/taltech_course",
-                        "postgres",
-                        "postgres");
+                Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql))
 
         {
@@ -67,33 +68,37 @@ public class PersonDao {
     }
 
 
-    public void addPerson() {
+    public Person insertPerson(Person person) {
 
-        String sql = "INSERT INTO person (name, age) values ('alex', 21)";
+        String sql = "INSERT INTO person (name, age) values (?, ?)";
             try (
-                    Connection conn = DriverManager.getConnection(
-                            "jdbc:postgresql://localhost:5433/taltech_course",
-                            "postgres",
-                            "postgres");
-                    Statement stmt = conn.createStatement())
+                    Connection conn = getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql, new String[] {"id"}))
+
             {
-                ResultSet rs = stmt.executeQuery(sql);
+                ps.setString(1, person.getName());
+                ps.setInt(2, person.getAge());
+                ps.executeUpdate();
+                ResultSet rs = ps.getGeneratedKeys();
 
                 if (!rs.next()) {
                     throw new RuntimeException("error");
                 }
-            } catch (SQLException e) {
 
+                System.out.println("Id is " + rs.getLong("id"));
+                person.setId(rs.getLong("id"));
+
+                return person;
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
     }
 
     public void createSchema() {
 
         try (
-                Connection conn = DriverManager.getConnection(
-                        "jdbc:postgresql://localhost:5433/taltech_course",
-                        "postgres",
-                        "postgres");
+                Connection conn = getConnection();
                 Statement stmt = conn.createStatement())
 
         {
